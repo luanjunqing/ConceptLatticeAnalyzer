@@ -1,0 +1,211 @@
+package conceptLatticeAnalyzer;
+
+import java.awt.FontFormatException;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import static conceptLatticeAnalyzer.ConceptTools.*;
+
+public class WithoutCC {
+	private String readPath, writePath;
+	private File readFile, writeFile;
+	private CalleeCaller cc;
+	private BufferedReader br;
+	private PrintWriter pw;
+	private HashMap<Integer, Pair<Double, Double>> node;
+	private ArrayList<Pair<Integer, Integer>> edge;
+	private HashMap<Integer, ArrayList<String>> object,attribute;
+	private int conceptMax = 0;
+	public WithoutCC(String readePath, String writePath, String ccpath) {
+		this.readPath = readePath;
+		this.writePath = writePath;
+		cc = new CalleeCaller(ccpath);
+		node = new HashMap<Integer, Pair<Double,Double>>();
+		edge = new ArrayList<Pair<Integer,Integer>>();
+		object = new HashMap<Integer, ArrayList<String>>();
+		attribute = new HashMap<Integer, ArrayList<String>>();
+	}
+	
+	public void init() throws IOException, FontFormatException {
+		readFile = new File(readPath);
+		br = new BufferedReader(new FileReader(readFile));
+		writeFile = new File(writePath);
+		pw = new PrintWriter(new BufferedWriter(new FileWriter(writeFile)));
+		cc.init();
+		cc.makeTable();
+	}
+	
+	public void read() throws IOException, FontFormatException {
+		String s;
+		int conceptNum;
+		ArrayList<String> temp;
+		while((s = br.readLine()) != null) {
+			conceptNum = makeConceptNum(s);
+			switch(checkLineType(s)){
+			case Node:
+				if(conceptMax < conceptNum)
+					conceptMax = conceptNum;
+				node.put(conceptNum, makeConceptNode(s));
+				break;
+			case Edge:
+				edge.add(makeConceptEdge(s));
+				break;
+			case Object:
+				if(!object.containsKey(conceptNum))
+					object.put(conceptNum, new ArrayList<String>());
+				temp = object.get(conceptNum);
+				temp.add(makeConceptObject(s));
+				object.put(conceptNum, temp);
+				break;
+			case Attribute:
+				if(!attribute.containsKey(conceptNum))
+					attribute.put(conceptNum, new ArrayList<String>());
+				temp = attribute.get(conceptNum);
+				temp.add(makeConceptAttribute(s));
+				attribute.put(conceptNum, temp);
+				break;
+			case EOF:
+				return;
+			case Other:
+				System.out.println("Format Error in concept-lattice");
+				throw new FontFormatException(s);
+			}
+		}
+	}
+	
+	public void fina() throws IOException {
+		br.close();
+		pw.close();
+		cc.fina();
+	}
+	
+	public void write() throws IOException {
+		for(int i=1; node.containsKey(i); i++)
+			pw.println("Node: "+i+", "+node.get(i));
+		for(Pair<Integer, Integer> pairII : edge)
+			pw.println("Edge: "+pairII);
+		for(int i=1; i<=conceptMax; i++){
+			if(!object.containsKey(i))
+				continue;
+			for(String s : object.get(i))
+				pw.println("Object: "+i+", "+s);
+		}
+		for(int i=1; i<=conceptMax; i++){
+			if(!attribute.containsKey(i))
+				continue;
+			for(String s : attribute.get(i))
+				pw.println("Attribute: "+i+", "+s);
+		}
+		pw.println("EOF");
+	}
+	
+	public void without(){
+		withoutCallee();
+	}
+	
+	public void writeJson() throws IOException {
+		pw.println("var $lattice = {");
+		pw.println("  \"concepts\": {");
+		for(int i=1; i<=conceptMax; i++){
+			pw.println("    \""+i+"\": {");
+			pw.println("      \"left\": "+node.get(i).first() + ",");
+			pw.println("      \"top\": "+node.get(i).second() + ",");
+			pw.println("      \"children\": [");
+			for(Pair<Integer,Integer> pairII : edge){
+				if(pairII.second() == i)
+					pw.println("        "+pairII.first()+",");
+			}
+			pw.println("      ],");
+			pw.println("      \"parents\": [");
+			for(Pair<Integer,Integer> pairII : edge){
+				if(pairII.first() == i)
+					pw.println("        "+pairII.second()+",");
+			}
+			pw.println("      ],");
+			pw.println("      \"intent\": [");
+				if(attribute.containsKey(i))
+					for(String s : attribute.get(i))
+						pw.println("        \""+s+"\",");
+			pw.println("      ],");
+			pw.println("      \"extent\": [");
+				if(object.containsKey(i))
+					for(String s : object.get(i))
+						pw.println("        \""+s+"\",");
+			pw.println("      ],");
+			pw.println("    },");
+		}
+		pw.println("  },");
+		pw.println("  \"objects\": {");
+		for(int i=1; i<=conceptMax; i++){
+			if(object.containsKey(i))
+				for(String s : object.get(i))
+					pw.println("    \""+s+"\": "+i+",");
+		}
+		pw.println("  },");
+		pw.println("  \"attributes\": {");
+		for(int i=1; i<=conceptMax; i++){
+			if(attribute.containsKey(i))
+				for(String s : attribute.get(i))
+					pw.println("    \""+s+"\": "+i+",");
+		}
+		pw.println("  },");
+		pw.println("  \"relations\": [");
+		for(Pair<Integer, Integer> pairII : edge){
+			pw.println("    [");
+			pw.println("      " + pairII.first()+",");
+			pw.println("      " + pairII.second());
+			pw.println("    ],");
+		}
+		pw.println("  ]");
+		pw.println("}");
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void withoutCallee(){
+		//if concept has method whoes callees also belong to the concept, remove callees
+		ArrayList<String> temp1, temp2;
+		for(int i=0; i<=conceptMax; i++) {
+			if(!attribute.containsKey(i))
+				continue;
+			temp1 = attribute.get(i);
+			temp2 = (ArrayList<String>)temp1.clone();
+			for(int j=0; j<temp1.size(); j++){
+				for(int k=0; k<temp1.size(); k++){
+					if(j == k)
+						continue;
+					if(cc.isCallerCallee(temp1.get(j), temp2.get(k))){
+						String tempS = "---->"+temp2.get(k);
+						if("---->".equals(temp2.get(j).substring(0, 5)))
+							tempS = temp2.get(j).substring(0, temp2.get(j).lastIndexOf("---->")+5) + tempS;
+						temp2.set(k, tempS);
+					}
+				}
+			}
+			attribute.put(i, temp2);
+		}
+	}
+	
+	public static void main(String[] args) {
+		WithoutCC wocc = new WithoutCC("resource/concept-lattice.txt", "resource/concept-latticeWOCallee.json", "resource/dependencies_in_source.csv");
+		try {
+			wocc.init();
+			wocc.read();
+			wocc.without();
+			wocc.writeJson();
+			wocc.fina();
+		} catch(IOException e) {
+			System.out.println(e);
+		} catch(FontFormatException e) {
+			System.out.println(e);
+		}
+
+	}
+
+}
