@@ -107,6 +107,7 @@ public class ReadChangeWriter {
 	}
 	
 	public void change(){
+		attribute = new WithoutCallee(cc,attribute,conceptMax).change();
 	}
 	
 	public void writeJson() throws IOException {
