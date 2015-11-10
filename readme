@@ -3,3 +3,7 @@ WithoutCallee
 　11/06	calleeをとりあえず---->を先頭につけてみる
  11/06	結構---->となるやつがあったので何段目で呼ばれたかを表してみる
  11/07  callerの後にcalleeが来るように並び替えて表示する ひとまずWithoutCallee完成
+ 
+ ShowSuperCallee
+ 上位コンセプトをCalleeとして呼んでいるならそれを教えた方が見やすい？
+ 11/09	全てのSuperConceptを探索し終わっているものから順に探索するようなループを組む

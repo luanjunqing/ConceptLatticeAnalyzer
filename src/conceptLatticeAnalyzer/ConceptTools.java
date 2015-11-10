@@ -1,5 +1,8 @@
 package conceptLatticeAnalyzer;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 public class ConceptTools {
 	public static LineType checkLineType(String s) {
 		if(s.length() > 4 && "Node:".equals(s.substring(0, 5)))
@@ -55,5 +58,32 @@ public class ConceptTools {
 			return null;
 		int first = Integer.parseInt(s.substring(6, s.indexOf(',')));
 		return new Pair<Integer, Integer>(first, Integer.parseInt(s.substring(s.indexOf(',')+2)));
+	}
+	
+	public static ArrayList<Integer> getSuperConcept(int now, ArrayList<Pair<Integer, Integer>> edge) {
+		ArrayList<Integer> temp = new ArrayList<Integer>();
+		for(Pair<Integer, Integer> e : edge)
+			if(e.first() == now)
+				temp.add(e.second());
+		return temp;
+	}
+	
+	public static ArrayList<Integer> getSubConcept(int now, ArrayList<Pair<Integer, Integer>> edge) {
+		ArrayList<Integer> temp = new ArrayList<Integer>();
+		for(Pair<Integer, Integer> e : edge)
+			if(e.second() == now)
+				temp.add(e.first());
+		return temp;
+	}
+	
+	public static int getTop(ArrayList<Pair<Integer, Integer>> edge,
+			HashMap<Integer, Pair<Double, Double>> node, int conceptMax){
+		for(int i=0; i<=conceptMax; i++){
+			if(!node.containsKey(i))
+				continue;
+			if(getSuperConcept(i, edge).isEmpty())
+				return i;
+		}
+		return -1;
 	}
 }
