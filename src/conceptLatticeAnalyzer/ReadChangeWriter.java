@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 import static conceptLatticeAnalyzer.ConceptTools.*;
 
@@ -107,13 +108,16 @@ public class ReadChangeWriter {
 	}
 	
 	public void change(){
+		new WithoutFeature(node, edge, object, attribute, conceptMax).change(9);
 		attribute = new WithoutCallee(cc,attribute,conceptMax).change();
 	}
 	
 	public void writeJson() throws IOException {
 		pw.println("var $lattice = {");
 		pw.println("  \"concepts\": {");
-		for(int i=1; i<=conceptMax; i++){
+		for(int i=0; i<=conceptMax; i++){
+			if(!node.containsKey(i))
+				continue;
 			pw.println("    \""+i+"\": {");
 			pw.println("      \"left\": "+node.get(i).first() + ",");
 			pw.println("      \"top\": "+node.get(i).second() + ",");
@@ -168,7 +172,7 @@ public class ReadChangeWriter {
 	}
 	
 	public static void main(String[] args) {
-		ReadChangeWriter wocc = new ReadChangeWriter("resource/concept-lattice.txt", "resource/lattice.json", "resource/dependencies_in_source.csv");
+		ReadChangeWriter wocc = new ReadChangeWriter("resource/concept-lattice.txt", "resource/lattice_f9.json", "resource/dependencies_in_source.csv");
 		try {
 			wocc.init();
 			wocc.read();

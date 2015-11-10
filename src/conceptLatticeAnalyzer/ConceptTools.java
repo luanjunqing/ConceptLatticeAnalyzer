@@ -1,5 +1,9 @@
 package conceptLatticeAnalyzer;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
+
 public class ConceptTools {
 	public static LineType checkLineType(String s) {
 		if(s.length() > 4 && "Node:".equals(s.substring(0, 5)))
@@ -56,4 +60,55 @@ public class ConceptTools {
 		int first = Integer.parseInt(s.substring(6, s.indexOf(',')));
 		return new Pair<Integer, Integer>(first, Integer.parseInt(s.substring(s.indexOf(',')+2)));
 	}
+	
+	public static ArrayList<Integer> getSuperConcept(int now, ArrayList<Pair<Integer, Integer>> edge) {
+		ArrayList<Integer> temp = new ArrayList<Integer>();
+		for(Pair<Integer, Integer> e : edge)
+			if(e.first() == now)
+				temp.add(e.second());
+		return temp;
+	}
+	
+	public static ArrayList<Integer> getSubConcept(int now, ArrayList<Pair<Integer, Integer>> edge) {
+		ArrayList<Integer> temp = new ArrayList<Integer>();
+		for(Pair<Integer, Integer> e : edge)
+			if(e.second() == now)
+				temp.add(e.first());
+		return temp;
+	}
+	
+	public static void getAllSubConcept(int now, ArrayList<Pair<Integer, Integer>> edge,
+			ConcurrentSkipListSet<Integer> allSub) {
+		ArrayList<Integer> temp = getSubConcept(now, edge);
+		for(Integer sub : temp){
+			if(allSub.add(sub))
+				getAllSubConcept(sub, edge, allSub);
+		}
+	}
+
+	public static void getAllSuperConcept(int now, ArrayList<Pair<Integer, Integer>> edge,
+			ConcurrentSkipListSet<Integer> allSuper) {
+		ArrayList<Integer> temp = getSuperConcept(now, edge);
+		for(Integer superC : temp){
+			if(allSuper.add(superC))
+				getAllSuperConcept(superC, edge, allSuper);
+		}
+	}
+
+	public static int getFeatureConcept(int featureNum, HashMap<Integer, ArrayList<String>> attribute, int conceptMax) {
+		String fname;
+		if(featureNum<10)
+			fname = "f0"+featureNum+": ";
+		else
+			fname = "f"+featureNum+": ";
+		for(int i=0; i<=conceptMax; i++){
+			if(!attribute.containsKey(i))
+				continue;
+			for(String s : attribute.get(i))
+				if(fname.equals(s.substring(0, fname.length())))
+					return i;
+		}
+		return -1;
+	}
+
 }
