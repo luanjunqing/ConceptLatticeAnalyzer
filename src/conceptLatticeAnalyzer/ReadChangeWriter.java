@@ -109,9 +109,10 @@ public class ReadChangeWriter {
 	}
 	
 	public void change(){
-		score = new ScoreConcept(node, edge, object, attribute, conceptMax).calcScore(8, 10);
-		new WithoutFeature(node, edge, object, attribute, conceptMax).change(8);
+		score = new ScoreConcept(node, edge, object, attribute, conceptMax).calcScore(1, 10);
+		new WithoutFeature(node, edge, object, attribute, conceptMax).change(1);
 		attribute = new WithoutCallee(cc,attribute,conceptMax).change();
+		attribute = new ShowSuperCallee(cc, attribute, edge, conceptMax).change();
 	}
 	
 	public void writeJson() throws IOException {
@@ -200,7 +201,7 @@ public class ReadChangeWriter {
 	}
 	
 	public static void main(String[] args) {
-		ReadChangeWriter wocc = new ReadChangeWriter("resource/concept-lattice-edit.txt", "resource/lattice-scoreF8.json", "resource/dependencies_in_source.csv");
+		ReadChangeWriter wocc = new ReadChangeWriter("resource/concept-lattice-edit.txt", "resource/lattice-scoreF1.json", "resource/dependencies_in_source.csv");
 		try {
 			wocc.init();
 			wocc.read();

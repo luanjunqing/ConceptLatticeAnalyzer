@@ -17,3 +17,9 @@ WithoutCallee
  11/15	ReadChangeWriterのequalFeatureメソッドが間違っている(比較しているfeatureが存在しているコンセプトもfeature以外のattributeが一致しているか調べないといけない)
  		→今回の例ではエラーとしてでない 今度直す
  11/15	ScoreConceptでfeatureとの関連度をスコアとして表示できるように変更 スコアは(1/下位feature)
+
+ ShowSuperCallee
+ 上位コンセプトをCalleeとして呼んでいるならそれを教えた方が見やすい？
+ 11/09	全てのSuperConceptを探索し終わっているものから順に探索するようなループを組む
+ 11/16  自分の上位コンセプトすべてに対しcalleeがいないか確かめる
+ 		→あれば先頭に"sub(コンセプト番号)-(メソッド番号)==>"を付ける

@@ -111,4 +111,14 @@ public class ConceptTools {
 		return -1;
 	}
 
+	public static int getTop(ArrayList<Pair<Integer, Integer>> edge,
+			HashMap<Integer, Pair<Double, Double>> node, int conceptMax){
+		for(int i=0; i<=conceptMax; i++){
+			if(!node.containsKey(i))
+				continue;
+			if(getSuperConcept(i, edge).isEmpty())
+				return i;
+		}
+		return -1;
+	}
 }
