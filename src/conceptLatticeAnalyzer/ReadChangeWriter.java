@@ -24,6 +24,7 @@ public class ReadChangeWriter {
 	private ArrayList<Pair<Integer, Integer>> edge;
 	private HashMap<Integer, ArrayList<String>> object,attribute;
 	private int conceptMax = 0;
+	private HashMap<Integer, Double> score;
 	public ReadChangeWriter(String readePath, String writePath, String ccpath) {
 		this.readPath = readePath;
 		this.writePath = writePath;
@@ -108,7 +109,8 @@ public class ReadChangeWriter {
 	}
 	
 	public void change(){
-		new WithoutFeature(node, edge, object, attribute, conceptMax).change(9);
+		score = new ScoreConcept(node, edge, object, attribute, conceptMax).calcScore(8, 10);
+		new WithoutFeature(node, edge, object, attribute, conceptMax).change(8);
 		attribute = new WithoutCallee(cc,attribute,conceptMax).change();
 	}
 	
@@ -121,6 +123,9 @@ public class ReadChangeWriter {
 			pw.println("    \""+i+"\": {");
 			pw.println("      \"left\": "+node.get(i).first() + ",");
 			pw.println("      \"top\": "+node.get(i).second() + ",");
+			if(score != null)
+				if(score.containsKey(i))
+					pw.println("      \"score\": "+String.format("%.2f",score.get(i))+",");
 			pw.println("      \"children\": [");
 			for(Pair<Integer,Integer> pairII : edge){
 				if(pairII.second() == i)
@@ -171,13 +176,37 @@ public class ReadChangeWriter {
 		pw.println("}");
 	}
 	
+	public void equalFeature(int featureNum){
+		for(int i=0; i<=featureNum; i++){
+			int iCon = getFeatureConcept(i, attribute, conceptMax);
+			if(iCon == -1)
+				continue;
+			ConcurrentSkipListSet<Integer> iSuper = new ConcurrentSkipListSet<Integer>();
+			ConcurrentSkipListSet<Integer> iSub = new ConcurrentSkipListSet<Integer>();
+			getAllSuperConcept(iCon, edge, iSuper);
+			getAllSubConcept(iCon, edge, iSub);
+			for(int j=i+1; j<=featureNum; j++){
+				int jCon = getFeatureConcept(j, attribute, conceptMax);
+				if(jCon == -1)
+					continue;
+				ConcurrentSkipListSet<Integer> jSuper = new ConcurrentSkipListSet<Integer>();
+				ConcurrentSkipListSet<Integer> jSub = new ConcurrentSkipListSet<Integer>();
+				getAllSuperConcept(jCon, edge, jSuper);
+				getAllSubConcept(jCon, edge, jSub);
+				if(iSuper.equals(jSuper) && iSub.equals(jSub))
+					System.out.println("feature:"+i+"---feature:"+j);
+			}
+		}
+	}
+	
 	public static void main(String[] args) {
-		ReadChangeWriter wocc = new ReadChangeWriter("resource/concept-lattice.txt", "resource/lattice_f9.json", "resource/dependencies_in_source.csv");
+		ReadChangeWriter wocc = new ReadChangeWriter("resource/concept-lattice-edit.txt", "resource/lattice-scoreF8.json", "resource/dependencies_in_source.csv");
 		try {
 			wocc.init();
 			wocc.read();
 			wocc.change();
 			wocc.writeJson();
+//			wocc.equalFeature(10);
 			wocc.fina();
 		} catch(IOException e) {
 			System.out.println(e);
