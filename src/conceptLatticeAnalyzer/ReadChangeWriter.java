@@ -169,7 +169,7 @@ public class ReadChangeWriter {
 	}
 	
 	public static void main(String[] args) {
-		ReadChangeWriter wocc = new ReadChangeWriter("resource/concept-lattice.txt", "resource/lattice.json", "resource/dependencies_in_source.csv");
+		ReadChangeWriter wocc = new ReadChangeWriter("resource/concept-lattice-edit.txt", "resource/lattice-editF.json", "resource/dependencies_in_source.csv");
 		try {
 			wocc.init();
 			wocc.read();

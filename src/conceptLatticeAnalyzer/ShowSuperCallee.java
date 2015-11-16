@@ -2,6 +2,7 @@ package conceptLatticeAnalyzer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 public class ShowSuperCallee {
 	private CalleeCaller cc;
@@ -24,7 +25,30 @@ public class ShowSuperCallee {
 	public HashMap<Integer, ArrayList<String>> change() {
 		Integer nextConcept;
 		while((nextConcept = nextConcept()) != null) {
-			System.out.println(nextConcept);
+			if(attribute.containsKey(nextConcept)){
+				ConcurrentSkipListSet<Integer> superConcept = new ConcurrentSkipListSet<Integer>();
+				ConceptTools.getAllSuperConcept(nextConcept, edge, superConcept);
+				ArrayList<String> ats = attribute.get(nextConcept);
+				while(!superConcept.isEmpty()){
+					int con = superConcept.pollFirst();
+					if(!attribute.containsKey(con))
+						continue;
+					ArrayList<String> conats = attribute.get(con);
+					for(int i=0; i<ats.size(); i++){
+						String at = ats.get(i);
+						if(at.indexOf("-->")!=-1)
+							at = at.substring(at.lastIndexOf("-->")+3);
+						for(int j=0; j<conats.size(); j++) {
+							String conat = conats.get(j);
+							if(conat.indexOf("-->")!=-1)
+								conat = conat.substring(conat.lastIndexOf("-->")+3);							
+							if(cc.isCallerCallee(at, conat)) {
+								conats.set(j, "sub"+nextConcept+"--"+(i+1)+"==>"+conats.get(j));
+							}
+						}
+					}
+				}
+			}
 			flag.set(nextConcept, true);
 		}
 		return attribute;

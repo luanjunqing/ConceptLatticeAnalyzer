@@ -2,6 +2,7 @@ package conceptLatticeAnalyzer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 public class ConceptTools {
 	public static LineType checkLineType(String s) {
@@ -74,6 +75,24 @@ public class ConceptTools {
 			if(e.second() == now)
 				temp.add(e.first());
 		return temp;
+	}
+	
+	public static void getAllSubConcept(int now, ArrayList<Pair<Integer, Integer>> edge,
+			ConcurrentSkipListSet<Integer> allSub) {
+		ArrayList<Integer> temp = getSubConcept(now, edge);
+		for(Integer sub : temp){
+			if(allSub.add(sub))
+				getAllSubConcept(sub, edge, allSub);
+		}
+	}
+
+	public static void getAllSuperConcept(int now, ArrayList<Pair<Integer, Integer>> edge,
+			ConcurrentSkipListSet<Integer> allSuper) {
+		ArrayList<Integer> temp = getSuperConcept(now, edge);
+		for(Integer superC : temp){
+			if(allSuper.add(superC))
+				getAllSuperConcept(superC, edge, allSuper);
+		}
 	}
 	
 	public static int getTop(ArrayList<Pair<Integer, Integer>> edge,
