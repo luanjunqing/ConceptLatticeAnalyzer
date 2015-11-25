@@ -59,6 +59,7 @@ public class ScoreConcept {
 			return;
 		ConcurrentSkipListSet<Integer> allSub = new ConcurrentSkipListSet<Integer>();
 		ConcurrentSkipListSet<Integer> allSuper = new ConcurrentSkipListSet<Integer>();
+		ConcurrentSkipListSet<Integer> editConcept = new ConcurrentSkipListSet<Integer>();
 		ConceptTools.getAllSubConcept(now, edge, allSub);
 		allSub.add(now);
 		while(!allSub.isEmpty()) {
@@ -67,12 +68,13 @@ public class ScoreConcept {
 				continue;
 			ConceptTools.getAllSuperConcept(con, edge, allSuper);
 			allSuper.add(con);
-			while(!allSuper.isEmpty()){
-				double temp = score.get(allSuper.first());
-				if(temp != 0)
-					score.put(allSuper.first(), temp/(1+temp));
-				allSuper.pollFirst();
-			}
+			while(!allSuper.isEmpty())
+				editConcept.add(allSuper.pollFirst());
+		}
+		while(!editConcept.isEmpty()){
+			double temp = score.get(editConcept.first()); 
+			score.put(editConcept.first(), temp/(1+temp));
+			editConcept.pollFirst();
 		}
 	}
 }

@@ -40,7 +40,7 @@ public class CalleeCaller {
 				throw new FontFormatException(s);
 			}
 			sList[0] = sList[0].substring(1);
-			//initialize	
+			//initialize
 			if(!calleeCallerTable.containsKey(sList[0]))
 				calleeCallerTable.put(sList[0], new ArrayList<String>());
 			ArrayList<String> temp = calleeCallerTable.get(sList[0]);

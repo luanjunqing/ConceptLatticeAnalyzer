@@ -30,12 +30,12 @@ public class WithoutCallee {
 		for(int i=0; i<modules.size(); i++){
 			if(callerCalleeTable.get(modules.get(i)).get(0) != i)
 				continue;
-			change(afterChange, modules, callerCalleeTable, i, 0);
+			changeCallee(afterChange, modules, callerCalleeTable, i, 0);
 		}
 		return afterChange;
 	}
 	
-	private void change(ArrayList<String> afterChange,
+	private void changeCallee(ArrayList<String> afterChange,
 			ArrayList<String> modules,
 			HashMap<String, ArrayList<Integer>> callerCalleeTable,
 			int now, int num){
@@ -46,7 +46,7 @@ public class WithoutCallee {
 		ArrayList<Integer> temp = callerCalleeTable.get(modules.get(now));
 		if(temp.size() > 1)
 			for(int i=1; i<temp.size(); i++)
-				change(afterChange, modules, callerCalleeTable, temp.get(i), num+1);
+				changeCallee(afterChange, modules, callerCalleeTable, temp.get(i), num+1);
 	}
 	
 	private HashMap<String, ArrayList<Integer>> makeCCTable(ArrayList<String> modules){

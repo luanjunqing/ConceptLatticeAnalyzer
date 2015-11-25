@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 
-public class ShowSuperCallee {
+public class ShowSubCallee {
 	private CalleeCaller cc;
 	private HashMap<Integer, ArrayList<String>> attribute;
 	private ArrayList<Pair<Integer, Integer>> edge;
 	private int conceptMax;
 	private ArrayList<Boolean> flag;
-	public ShowSuperCallee(CalleeCaller cc,
+	public ShowSubCallee(CalleeCaller cc,
 			HashMap<Integer, ArrayList<String>> attribute,
 			ArrayList<Pair<Integer, Integer>> edge, int conceptMax){
 		this.cc =cc;
@@ -21,16 +21,15 @@ public class ShowSuperCallee {
 		for(int i=0; i<=conceptMax; i++)
 			flag.add(false);
 	}
-	
 	public HashMap<Integer, ArrayList<String>> change() {
 		Integer nextConcept;
 		while((nextConcept = nextConcept()) != null) {
 			if(attribute.containsKey(nextConcept)){
-				ConcurrentSkipListSet<Integer> superConcept = new ConcurrentSkipListSet<Integer>();
-				ConceptTools.getAllSuperConcept(nextConcept, edge, superConcept);
+				ConcurrentSkipListSet<Integer> subConcept = new ConcurrentSkipListSet<Integer>();
+				ConceptTools.getAllSubConcept(nextConcept, edge, subConcept);
 				ArrayList<String> ats = attribute.get(nextConcept);
-				while(!superConcept.isEmpty()){
-					int con = superConcept.pollFirst();
+				while(!subConcept.isEmpty()){
+					int con = subConcept.pollFirst();
 					if(!attribute.containsKey(con))
 						continue;
 					ArrayList<String> conats = attribute.get(con);
@@ -47,7 +46,7 @@ public class ShowSuperCallee {
 							if(conat.indexOf("==>")!=-1)
 							conat = conat.substring(conat.lastIndexOf("==>")+3);
 							if(cc.isCallerCallee(at, conat)) {
-								conats.set(j, "sub"+nextConcept+"--"+other+"==>"+conats.get(j));
+								conats.set(j, "super"+nextConcept+"--"+other+"==>"+conats.get(j));
 							}
 						}
 						other++;
@@ -60,7 +59,7 @@ public class ShowSuperCallee {
 	}
 	
 	private Integer nextConcept() {
-		ArrayList<Integer> superConcepts;
+		ArrayList<Integer> subConcepts;
 		boolean temp;
 		for(int i=0; i<=conceptMax; i++) {
 			if(flag.get(i))
@@ -70,11 +69,11 @@ public class ShowSuperCallee {
 				i = 0;
 				continue;
 			}
-			superConcepts = ConceptTools.getSuperConcept(i, edge);
+			subConcepts = ConceptTools.getSubConcept(i, edge);
 			temp = true;
-			if(!superConcepts.isEmpty()){
-				for(Integer superConcept : superConcepts){
-					temp &= flag.get(superConcept);
+			if(!subConcepts.isEmpty()){
+				for(Integer subConcept : subConcepts){
+					temp &= flag.get(subConcept);
 				}
 			}
 			if(temp)
